@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>食在厦大 - 原型（完整版）</title>
+  <style>
+    :root {
+      --xmu-red: #B54949;
+      --xmu-red-dark: #8A2E2E;
+      --phoenix-orange: #E86A56;
+      --sea-blue: #4A90A4;
+      --open-green: #4A9B7F;
+      --bg: #F7F5F0;
+      --card: #FFFFFF;
+      --text: #2D2A26;
+      --subtext: #6B6560;
+      --border: #E8E4DE;
+      --gold: #E6C875;
+      --shadow: 0 4px 16px rgba(45, 42, 38, 0.08);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: #E5E5E5;
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .phone {
+      width: 375px;
+      height: 812px;
+      background: var(--bg);
+      border-radius: 40px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+    .status-bar {
+      height: 44px;
+      background: linear-gradient(135deg, var(--xmu-red) 0%, var(--xmu-red-dark) 100%);
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 8px 20px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+    .screen {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      display: none !important;
+      position: relative;
+      scrollbar-width: none;
+    }
+    .screen::-webkit-scrollbar { display: none; }
+    .screen.active { display: block !important; }
+    #screen-map.active { display: flex !important; flex-direction: column; }
+
+    .nav-header {
+      height: 48px;
+      background: linear-gradient(135deg, var(--xmu-red) 0%, var(--xmu-red-dark) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 17px;
+      font-weight: 600;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .nav-header .back {
+      position: absolute;
+      left: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 26px;
+    }
+    .nav-header .capsule {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 78px;
+      height: 30px;
+      border: 1px solid rgba(255,255,255,0.35);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 0 10px;
+    }
+    .nav-header .capsule span { font-size: 14px; opacity: 0.9; }
+    .nav-header .right-text {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 15px;
+      color: #fff;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    /* ===== 首页 ===== */
+    .home-header {
+      background: linear-gradient(135deg, var(--xmu-red) 0%, var(--xmu-red-dark) 100%);
+      padding: 0 16px 24px;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+    .home-header::before { content:""; position:absolute; right:-40px; top:-30px; width:180px; height:180px; background:rgba(255,255,255,0.06); border-radius:50%; }
+    .home-header::after { content:""; position:absolute; left:-20px; bottom:-60px; width:140px; height:140px; background:rgba(232,106,86,0.25); border-radius:50%; }
+    .campus-switch { display:flex; align-items:center; gap:4px; font-size:15px; font-weight:500; position:relative; z-index:1; }
+    .campus-switch svg { width:16px; height:16px; }
+    .search-box {
+      margin-top:14px; background:rgba(255,255,255,0.95); border-radius:24px; height:38px;
+      display:flex; align-items:center; padding:0 14px; color:var(--subtext); font-size:14px; gap:8px;
+      position:relative; z-index:1; cursor:pointer;
+    }
+    .banner {
+      margin:-20px 16px 16px; background:linear-gradient(90deg,#FCE7D8 0%,#FAD0B7 100%);
+      border-radius:16px; height:140px; position:relative; overflow:hidden;
+      display:flex; align-items:center; padding:0 20px; box-shadow:var(--shadow); cursor:pointer;
+    }
+    .banner-text { flex:1; z-index:1; }
+    .banner-text .tag { display:inline-block; background:var(--xmu-red); color:#fff; font-size:11px; padding:3px 8px; border-radius:10px; margin-bottom:8px; }
+    .banner-text h2 { font-size:20px; color:var(--xmu-red-dark); line-height:1.3; }
+    .banner-text p { font-size:13px; color:var(--subtext); margin-top:6px; }
+    .banner-illust { width:130px; height:130px; position:absolute; right:0; bottom:0; opacity:0.9; }
+    .quick-grid {
+      display:grid; grid-template-columns:repeat(4,1fr); gap:12px 8px; padding:16px;
+      background:var(--card); margin:0 16px 12px; border-radius:16px; box-shadow:var(--shadow);
+    }
+    .quick-item { text-align:center; cursor:pointer; }
+    .quick-icon { width:48px; height:48px; border-radius:14px; margin:0 auto 8px; display:flex; align-items:center; justify-content:center; font-size:24px; }
+    .quick-item span { font-size:12px; color:var(--text); }
+    .section-title { display:flex; justify-content:space-between; align-items:center; padding:16px 16px 10px; font-size:17px; font-weight:700; }
+    .section-title > span:first-child { position:relative; padding-left:11px; }
+    .section-title > span:first-child::before { content:''; position:absolute; left:0; top:50%; transform:translateY(-50%); width:3px; height:15px; border-radius:2px; background:linear-gradient(180deg,#E8B84B,var(--gold)); }
+    .section-title .more { font-size:13px; color:var(--subtext); font-weight:400; cursor:pointer; }
+    .notice-bar { background:#FFF8E6; border-radius:12px; margin:0 16px 12px; padding:10px 12px; display:flex; align-items:center; gap:8px; font-size:13px; color:#8B6914; }
+    .notice-bar .bell { font-size:16px; }
+    .notice-bar .more-link { color:var(--sea-blue); margin-left:auto; cursor:pointer; }
+    .canteen-card { background:var(--card); margin:0 16px 12px; border-radius:16px; padding:14px; box-shadow:var(--shadow); display:flex; gap:12px; cursor:pointer; }
+    .canteen-card img { width:90px; height:70px; border-radius:12px; object-fit:cover; }
+    .canteen-info { flex:1; }
+    .canteen-name { font-size:16px; font-weight:600; }
+    .canteen-meta { display:flex; align-items:center; gap:8px; margin-top:6px; font-size:12px; }
+    .status-open { background:#E8F5F0; color:var(--open-green); padding:2px 6px; border-radius:6px; }
+    .status-closed { background:#F2E8E8; color:#B54949; padding:2px 6px; border-radius:6px; }
+    .hours { color:var(--subtext); }
+    .rating { color:var(--phoenix-orange); font-weight:600; }
+    .canteen-tags { margin-top:8px; display:flex; gap:6px; flex-wrap:wrap; }
+    .tag-pill { background:#F2EEEA; color:var(--subtext); font-size:11px; padding:3px 8px; border-radius:10px; }
+    /* 实时拥挤度指示器 */
+    .crowd { display:inline-flex; align-items:center; gap:5px; font-size:12px; }
+    .crowd-bars { display:inline-flex; align-items:flex-end; gap:2px; }
+    .crowd-bars i { width:3px; height:8px; border-radius:1px; background:#E5E0DA; display:block; }
+    .crowd-bars i:nth-child(2){ height:10px; }
+    .crowd-bars i:nth-child(3){ height:12px; }
+    .crowd-bars i:nth-child(4){ height:14px; }
+    .crowd-label { font-weight:600; line-height:1; }
+    .crowd-pct { color:var(--subtext); font-size:11px; }
+    .crowd.lv-1 .crowd-bars i:nth-child(1){ background:var(--open-green); }
+    .crowd.lv-2 .crowd-bars i:nth-child(-n+2){ background:#D9A441; }
+    .crowd.lv-3 .crowd-bars i:nth-child(-n+3){ background:var(--phoenix-orange); }
+    .crowd.lv-4 .crowd-bars i:nth-child(-n+4){ background:var(--xmu-red); }
+    .crowd.lv-1 .crowd-label{ color:var(--open-green); }
+    .crowd.lv-2 .crowd-label{ color:#B5852E; }
+    .crowd.lv-3 .crowd-label{ color:var(--phoenix-orange); }
+    .crowd.lv-4 .crowd-label{ color:var(--xmu-red); }
+    .crowd-row { display:flex; align-items:center; gap:8px; margin-top:7px; font-size:12px; color:var(--subtext); }
+    .crowd-row .lbl { color:var(--subtext); }
+    /* 首页卡片拥挤度色块（更醒目，呼应列表图例） */
+    .crowd-badge { display:inline-flex; align-items:center; gap:6px; margin-top:8px; padding:5px 10px; border-radius:11px; font-size:12px; align-self:flex-start; }
+    .crowd-badge.lv-1 { background:#E8F5F0; }
+    .crowd-badge.lv-2 { background:#FBF1DD; }
+    .crowd-badge.lv-3 { background:#FDEBE3; }
+    .crowd-badge.lv-4 { background:#FBEAEA; }
+    .crowd-badge.lv-1 .crowd-bars i:nth-child(1){ background:var(--open-green); }
+    .crowd-badge.lv-2 .crowd-bars i:nth-child(-n+2){ background:#D9A441; }
+    .crowd-badge.lv-3 .crowd-bars i:nth-child(-n+3){ background:var(--phoenix-orange); }
+    .crowd-badge.lv-4 .crowd-bars i:nth-child(-n+4){ background:var(--xmu-red); }
+    .crowd-badge.lv-1 .crowd-label{ color:var(--open-green); }
+    .crowd-badge.lv-2 .crowd-label{ color:#B5852E; }
+    .crowd-badge.lv-3 .crowd-label{ color:var(--phoenix-orange); }
+    .crowd-badge.lv-4 .crowd-label{ color:var(--xmu-red); }
+    /* 详情页实时拥挤度卡片 */
+    .crowd-card { margin:0 16px 12px; background:var(--card); border-radius:16px; box-shadow:var(--shadow); padding:16px; }
+    .crowd-card-head { display:flex; justify-content:space-between; align-items:center; font-size:14px; font-weight:600; }
+    .crowd-card-head .crowd-time { font-size:11px; color:var(--subtext); font-weight:400; }
+    .crowd-card-body { display:flex; align-items:center; gap:18px; margin-top:14px; }
+    .crowd-now { text-align:center; min-width:82px; }
+    .crowd-now .lv-tag { font-size:22px; font-weight:700; }
+    .lv-tag.lv-1{ color:var(--open-green); } .lv-tag.lv-2{ color:#B5852E; } .lv-tag.lv-3{ color:var(--phoenix-orange); } .lv-tag.lv-4{ color:var(--xmu-red); }
+    .crowd-now .lv-pct { font-size:13px; color:var(--subtext); margin-top:2px; }
+    .crowd-now .lv-tip { font-size:11px; color:var(--sea-blue); margin-top:8px; line-height:1.4; }
+    .crowd-hours { flex:1; display:flex; align-items:flex-end; justify-content:space-around; gap:6px; height:74px; }
+    .crowd-hours .ch-col { display:flex; flex-direction:column; align-items:center; gap:6px; height:100%; justify-content:flex-end; }
+    .crowd-hours .ch-bar { width:100%; max-width:22px; border-radius:5px 5px 0 0; }
+    .crowd-hours .ch-name { font-size:11px; color:var(--subtext); }
+    .crowd-legend { display:flex; gap:14px; margin:12px 16px 0; flex-wrap:wrap; font-size:11px; color:var(--subtext); }
+    .crowd-legend span { display:inline-flex; align-items:center; gap:4px; }
+    .crowd-legend i { width:8px; height:8px; border-radius:50%; display:block; }
+    .activity-card { background:var(--card); margin:0 16px 12px; border-radius:16px; overflow:hidden; box-shadow:var(--shadow); cursor:pointer; }
+    .activity-card .cover { height:120px; background:linear-gradient(90deg,#D4E9F0 0%,#B8DDE8 100%); position:relative; display:flex; align-items:center; padding:0 18px; }
+    .activity-card .cover h3 { font-size:17px; color:#2A5A6A; }
+    .activity-card .cover p { font-size:12px; color:#4A7A8A; margin-top:6px; }
+    .activity-card .body { padding:12px; }
+    .activity-card .title-row { display:flex; align-items:center; gap:6px; font-size:15px; font-weight:600; }
+    .fire-badge { background:#FFF0E8; color:var(--phoenix-orange); font-size:10px; padding:2px 5px; border-radius:4px; }
+    .activity-card .joiners { margin-top:8px; font-size:12px; color:var(--subtext); display:flex; justify-content:space-between; }
+    .notes-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:0 16px 20px; }
+    .note-card { background:var(--card); border-radius:14px; overflow:hidden; box-shadow:var(--shadow); cursor:pointer; }
+    .note-card .img-wrap { height:110px; }
+    .note-card img { width:100%; height:100%; object-fit:cover; }
+    .note-card .info { padding:10px; }
+    .note-card h4 { font-size:13px; font-weight:500; line-height:1.4; }
+    .note-card .footer { margin-top:8px; display:flex; justify-content:space-between; align-items:center; font-size:12px; color:var(--subtext); }
+    .note-card .author { display:flex; align-items:center; gap:4px; }
+    .avatar { width:16px; height:16px; border-radius:50%; background:var(--xmu-red); color:#fff; font-size:9px; display:flex; align-items:center; justify-content:center; }
+    .screen-padded { padding-bottom:20px; }
+
+    /* ===== 通用：列表 / 资讯 / FAQ ===== */
+    .search-bar { padding:10px 16px; display:flex; gap:10px; align-items:center; }
+    .search-input { flex:1; background:var(--card); border-radius:20px; height:38px; display:flex; align-items:center; padding:0 14px; gap:8px; color:var(--subtext); font-size:14px; box-shadow:var(--shadow); }
+    .sub-tabs { display:flex; gap:18px; padding:6px 16px 10px; border-bottom:1px solid var(--border); background:var(--card); }
+    .sub-tabs span { font-size:15px; color:var(--subtext); padding-bottom:8px; cursor:pointer; border-bottom:3px solid transparent; }
+    .sub-tabs span.active { color:var(--xmu-red); font-weight:600; border-bottom:3px solid var(--xmu-red); }
+    .news-card { background:var(--card); margin:0 16px 12px; border-radius:14px; padding:14px; box-shadow:var(--shadow); cursor:pointer; }
+    .news-card h3 { font-size:15px; line-height:1.4; }
+    .news-meta { margin-top:8px; font-size:12px; color:var(--subtext); display:flex; gap:12px; align-items:center; }
+    .news-cat { color:var(--xmu-red); background:#FCE8E8; padding:2px 8px; border-radius:10px; }
+    .list-card { background:var(--card); border-radius:14px; margin:0 16px 12px; padding:14px 16px; box-shadow:var(--shadow); cursor:pointer; }
+    .list-card .lc-title { font-size:15px; font-weight:500; }
+    .list-card .lc-meta { font-size:12px; color:var(--subtext); margin-top:6px; }
+    .faq-item { background:var(--card); border-radius:14px; margin:0 16px 12px; overflow:hidden; box-shadow:var(--shadow); }
+    .faq-q { padding:14px 16px; font-size:15px; font-weight:500; display:flex; justify-content:space-between; align-items:center; cursor:pointer; }
+    .faq-q .arrow { color:var(--subtext); transition:transform .2s; }
+    .faq-item.open .faq-q .arrow { transform:rotate(90deg); }
+    .faq-a { padding:0 16px 14px; font-size:14px; color:var(--subtext); line-height:1.6; display:none; }
+    .faq-item.open .faq-a { display:block; }
+
+    /* ===== 详情页（资讯/活动/笔记） ===== */
+    .detail-hero { height:200px; background:#eee; position:relative; }
+    .detail-hero img { width:100%; height:100%; object-fit:cover; }
+    .detail-page { background:var(--bg); min-height:100%; padding-bottom:70px; }
+    .detail-body { background:var(--card); margin:-24px 0 0; border-radius:20px 20px 0 0; padding:20px 16px; position:relative; }
+    .detail-body h1 { font-size:20px; line-height:1.4; }
+    .detail-sub { font-size:13px; color:var(--subtext); margin-top:10px; display:flex; gap:12px; align-items:center; }
+    .detail-content { font-size:15px; line-height:1.8; color:#3D3A36; margin-top:16px; }
+    .detail-content p { margin-bottom:14px; }
+    .detail-tags { display:flex; gap:8px; flex-wrap:wrap; margin-top:16px; }
+    .bottom-bar {
+      position:absolute; bottom:0; left:0; right:0; height:64px; background:var(--card);
+      border-top:1px solid var(--border); display:flex; align-items:center; gap:12px; padding:0 16px;
+    }
+    .bottom-bar .icon-btn { font-size:20px; color:var(--subtext); display:flex; flex-direction:column; align-items:center; font-size:12px; }
+    .bottom-bar .action-btn { flex:1; background:var(--xmu-red); color:#fff; border-radius:24px; height:44px; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:600; }
+    .comment-item { display:flex; gap:10px; padding:12px 0; border-bottom:1px solid var(--border); }
+    .comment-item .c-body { flex:1; }
+    .comment-item .c-name { font-size:13px; font-weight:600; }
+    .comment-item .c-text { font-size:14px; color:#3D3A36; margin-top:4px; }
+    .comment-item .c-time { font-size:11px; color:var(--subtext); margin-top:4px; }
+
+    /* ===== 表单 ===== */
+    .form-page { padding:16px; }
+    .form-group { margin-bottom:16px; }
+    .form-group label { display:block; font-size:14px; font-weight:600; margin-bottom:8px; }
+    .form-input, .form-textarea {
+      width:100%; border:1px solid var(--border); border-radius:10px; padding:12px;
+      font-size:14px; background:var(--card); color:var(--text); font-family:inherit;
+    }
+    .form-textarea { height:110px; resize:none; }
+    .seg { display:flex; gap:8px; flex-wrap:wrap; }
+    .seg-item { padding:8px 14px; border:1px solid var(--border); border-radius:20px; font-size:14px; color:var(--subtext); background:var(--card); cursor:pointer; }
+    .seg-item.active { background:var(--xmu-red); color:#fff; border-color:var(--xmu-red); }
+    .submit-btn { width:100%; background:var(--xmu-red); color:#fff; border:none; border-radius:24px; padding:14px; font-size:16px; font-weight:600; cursor:pointer; margin-top:10px; }
+    .img-upload { display:flex; gap:10px; }
+    .img-upload .box { width:72px; height:72px; border:1px dashed var(--border); border-radius:12px; display:flex; align-items:center; justify-content:center; color:var(--subtext); font-size:28px; background:var(--card); }
+    .intro-banner { height:120px; background:linear-gradient(90deg,#FFF0E8,#FAD0B7); border-radius:16px; margin:0 16px 16px; display:flex; align-items:center; padding:0 20px; }
+    .intro-banner h2 { font-size:18px; color:var(--xmu-red-dark); }
+    .intro-banner p { font-size:12px; color:var(--subtext); margin-top:6px; }
+    .gate-hero-img { width:140px; height:100%; object-fit:cover; border-radius:0 16px 16px 0; flex-shrink:0; }
+
+    /* ===== 积分中心 ===== */
+    .points-hero { background:linear-gradient(135deg,var(--xmu-red) 0%,var(--xmu-red-dark) 100%); padding:24px 16px; color:#fff; text-align:center; }
+    .points-hero .num { font-size:40px; font-weight:700; }
+    .points-hero .lbl { font-size:13px; opacity:.85; margin-top:4px; }
+    .task-item { background:var(--card); border-radius:14px; margin:0 16px 10px; padding:14px 16px; display:flex; align-items:center; gap:12px; box-shadow:var(--shadow); }
+    .task-item .t-icon { width:40px; height:40px; border-radius:10px; background:#FFF0E8; display:flex; align-items:center; justify-content:center; font-size:20px; }
+    .task-item .t-info { flex:1; }
+    .task-item .t-info h4 { font-size:14px; }
+    .task-item .t-info p { font-size:12px; color:var(--subtext); margin-top:2px; }
+    .task-item .t-btn { background:#FCE8E8; color:var(--xmu-red); font-size:13px; padding:6px 12px; border-radius:14px; cursor:pointer; }
+
+    /* ===== 美食地图 ===== */
+    .map-toolbar { padding:10px 16px; display:flex; gap:10px; align-items:center; }
+    .map-select { background:var(--card); border-radius:20px; padding:8px 12px; font-size:14px; display:flex; align-items:center; gap:4px; box-shadow:var(--shadow); }
+    .map-search { flex:1; background:var(--card); border-radius:20px; height:36px; display:flex; align-items:center; padding:0 12px; color:var(--subtext); font-size:13px; gap:6px; box-shadow:var(--shadow); }
+    .map-canvas { flex:1; background:#E8F4E8; position:relative; overflow:hidden; }
+    .map-svg { width:100%; height:100%; }
+    .map-pin { position:absolute; width:32px; height:40px; transform:translate(-50%,-100%); cursor:pointer; text-align:center; }
+    .map-pin .pin-body { width:28px; height:28px; border-radius:50% 50% 50% 0; transform:rotate(-45deg); display:flex; align-items:center; justify-content:center; margin:0 auto; box-shadow:0 2px 6px rgba(0,0,0,0.2); }
+    .map-pin .pin-body span { transform:rotate(45deg); font-size:14px; }
+    .map-pin .pin-label { margin-top:2px; font-size:10px; color:var(--text); background:rgba(255,255,255,0.85); padding:1px 4px; border-radius:4px; white-space:nowrap; }
+    .map-float { position:absolute; bottom:12px; left:16px; right:16px; background:var(--card); border-radius:16px; padding:14px; box-shadow:var(--shadow); }
+    .map-float .canteen-card { margin:0; box-shadow:none; padding:0; }
+    .map-float .canteen-card img { width:80px; height:60px; }
+    .map-actions { position:absolute; right:16px; top:12px; display:flex; flex-direction:column; gap:8px; }
+    .map-btn { width:38px; height:38px; border-radius:50%; background:var(--card); display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow); font-size:16px; }
+
+    /* ===== 我的 ===== */
+    .profile-header { background:linear-gradient(135deg,var(--xmu-red) 0%,var(--xmu-red-dark) 100%); padding:20px 16px 28px; color:#fff; }
+    .profile-user { display:flex; align-items:center; gap:14px; }
+    .profile-avatar { width:60px; height:60px; border-radius:50%; background:#fff; display:flex; align-items:center; justify-content:center; font-size:28px; }
+    .profile-name { font-size:19px; font-weight:600; }
+    .profile-bio { font-size:13px; opacity:.85; margin-top:4px; }
+    .profile-actions { margin-left:auto; display:flex; gap:12px; font-size:20px; }
+    .points-card { background:linear-gradient(90deg,#2D2A26 0%,#4A4540 100%); margin:-16px 16px 16px; border-radius:16px; padding:16px; color:#fff; display:flex; align-items:center; box-shadow:var(--shadow); cursor:pointer; }
+    .points-icon { width:42px; height:42px; border-radius:50%; background:linear-gradient(135deg,var(--gold) 0%,#D4A84B 100%); display:flex; align-items:center; justify-content:center; font-size:22px; margin-right:12px; }
+    .points-text { flex:1; }
+    .points-text h3 { font-size:16px; }
+    .points-text p { font-size:12px; opacity:.75; margin-top:2px; }
+    .points-num { font-size:22px; font-weight:700; }
+    .menu-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px 8px; background:var(--card); margin:0 16px; border-radius:16px; padding:18px 12px; box-shadow:var(--shadow); }
+    .menu-item { text-align:center; cursor:pointer; }
+    .menu-icon { width:42px; height:42px; border-radius:12px; margin:0 auto 8px; display:flex; align-items:center; justify-content:center; font-size:22px; }
+    .menu-item span { font-size:12px; color:var(--text); }
+
+    /* ===== 食堂详情 ===== */
+    .dish-filter { display:flex; gap:8px; padding:12px 16px; overflow-x:auto; }
+    .dish-filter span { white-space:nowrap; background:#F2EEEA; color:var(--subtext); font-size:13px; padding:6px 12px; border-radius:14px; flex-shrink:0; cursor:pointer; }
+    .dish-filter span.active { background:var(--xmu-red); color:#fff; }
+    .dish-list { padding:0 16px; }
+    .detail-tabs span { cursor:pointer; padding-bottom:2px; }
+    .detail-tabs span.active { color:var(--xmu-red); font-weight:600; border-bottom:2px solid var(--xmu-red); }
+    .tab-panel { display:none; }
+    .tab-panel.active { display:block; }
+    .dish-item.hidden { display:none; }
+    .empty-tip { text-align:center; padding:40px 16px; color:var(--subtext); font-size:14px; }
+    .review-list { padding:0 16px 20px; }
+    .review-item { background:var(--card); border-radius:14px; padding:14px; margin-bottom:10px; box-shadow:var(--shadow); }
+    .review-head { display:flex; align-items:center; gap:10px; }
+    .review-head .avatar { width:32px; height:32px; border-radius:50%; background:var(--xmu-red); color:#fff; font-size:12px; display:flex; align-items:center; justify-content:center; }
+    .review-meta { flex:1; }
+    .review-name { font-size:14px; font-weight:600; }
+    .review-stars { font-size:12px; color:var(--phoenix-orange); }
+    .review-date { font-size:12px; color:var(--subtext); margin-left:auto; }
+    .review-body { margin-top:10px; font-size:14px; line-height:1.6; }
+    .stall-floor { font-size:12px; color:var(--subtext); background:#F2EEEA; padding:2px 6px; border-radius:4px; }
+    .dish-item { background:var(--card); border-radius:14px; padding:12px; margin-bottom:10px; display:flex; gap:12px; box-shadow:var(--shadow); }
+    .dish-item img { width:80px; height:80px; border-radius:10px; object-fit:cover; }
+    .dish-info { flex:1; }
+    .dish-name { font-size:15px; font-weight:600; }
+    .dish-window { font-size:12px; color:var(--subtext); margin-top:4px; }
+    .dish-price { color:var(--xmu-red); font-weight:700; margin-top:6px; }
+    .dish-tags { display:flex; gap:4px; margin-top:6px; }
+
+    /* ===== 底部 Tab ===== */
+    .tab-bar { height:84px; background:var(--card); border-top:1px solid var(--border); display:flex; justify-content:space-around; align-items:flex-start; padding-top:8px; flex-shrink:0; }
+    .tab-item { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; color:var(--subtext); font-size:11px; cursor:pointer; padding:4px 0; }
+    .tab-item.active { color:var(--xmu-red); }
+    .tab-icon { width:24px; height:24px; display:flex; align-items:center; justify-content:center; font-size:22px; }
+    /* ===== 首页·厦大特色板块 ===== */
+    .feature-cards { display:flex; flex-direction:column; gap:12px; padding:0 16px 4px; }
+    .feature-card { display:flex; align-items:center; gap:14px; padding:14px 16px; border-radius:16px; box-shadow:var(--shadow); cursor:pointer; }
+    .feature-card.phoenix { background:linear-gradient(120deg,#FFE3DA 0%,#FAD0B7 100%); }
+    .feature-card.gate { background:linear-gradient(120deg,#EDE6FB 0%,#D9C9F0 100%); }
+    .feature-card .fc-emoji { font-size:26px; width:48px; height:48px; border-radius:14px; background:rgba(255,255,255,0.7); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .feature-card .fc-info { flex:1; }
+    .feature-card .fc-info h4 { font-size:15px; color:var(--xmu-red-dark); }
+    .feature-card.gate .fc-info h4 { color:#6B4A9B; }
+    .feature-card .fc-info p { font-size:12px; color:var(--subtext); margin-top:3px; }
+
+    /* ===== 凤凰花季页 ===== */
+    .phoenix-hero { margin:12px 16px 16px; border-radius:16px; padding:18px 20px; background:linear-gradient(135deg,#E86A56 0%,#B54949 100%); color:#fff; position:relative; overflow:hidden; }
+    .phoenix-hero h2 { font-size:19px; }
+    .phoenix-hero p { font-size:12px; opacity:.92; margin-top:6px; }
+    .countdown { display:inline-flex; gap:8px; margin-top:14px; }
+    .countdown .cd-box { background:rgba(255,255,255,0.22); border-radius:10px; padding:6px 10px; text-align:center; min-width:46px; }
+    .countdown .cd-num { font-size:20px; font-weight:700; line-height:1; }
+    .countdown .cd-lbl { font-size:10px; opacity:.85; margin-top:2px; }
+    .booking-box { background:var(--card); border-radius:16px; margin:0 16px 16px; padding:16px; box-shadow:var(--shadow); }
+    .booking-box h3 { font-size:15px; margin-bottom:8px; }
+    .full-btn { width:100%; background:var(--xmu-red); color:#fff; border:none; border-radius:24px; height:46px; font-size:16px; font-weight:600; cursor:pointer; margin-top:10px; }
+
+    /* ===== 统一按压反馈（提升真实 App 触感） ===== */
+    .canteen-card, .list-card, .news-card, .note-card, .quick-item, .menu-item, .feature-card, .activity-card, .faq-item, .task-item, .btn, .map-float, .dish-item, .seg-item, .submit-btn, .full-btn, .t-btn, .action-btn, .dish-filter span, .sub-tabs span {
+      transition: transform .12s ease, opacity .12s ease, box-shadow .12s ease;
+    }
+    .canteen-card:active, .list-card:active, .news-card:active, .note-card:active, .quick-item:active, .menu-item:active, .feature-card:active, .activity-card:active, .faq-item:active, .task-item:active, .btn:active, .map-float:active, .dish-item:active { transform: scale(.98); opacity:.92; }
+    .submit-btn:active, .full-btn:active, .t-btn:active, .action-btn:active, .dish-filter span:active, .sub-tabs span:active, .seg-item:active { transform: scale(.96); opacity:.9; }
+    .tab-item:active { transform: scale(.94); }
+    .map-pin:active { transform: translate(-50%,-100%) scale(.88); }
+
+  </style>
+</head>
+<body>
+  <div class="phone">
+    <div class="status-bar">
+      <span>13:49</span>
+      <span>5G 🔋</span>
+    </div>
+
+    <!-- ===== 首页 ===== -->
+    <div class="screen active" id="screen-home">
+      <div class="home-header">
+        <div class="campus-switch">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          <span>思明校区</span><span>▼</span>
+        </div>
+        <div class="search-box" onclick="goScreen('screen-search')">
+          <span>🔍</span><span>搜索食堂、菜品、笔记</span>
+        </div>
+      </div>
+      <div class="screen-padded">
+        <div class="banner" onclick="goScreen('screen-activity')">
+          <div class="banner-text">
+            <div class="tag">暖心福利</div>
+            <h2>厦大生日面<br>伴你成长每一岁</h2>
+            <p>凤凰花开季，一碗长寿面</p>
+          </div>
+          <svg class="banner-illust" viewBox="0 0 140 140" fill="none">
+            <path d="M70 120 Q60 80 90 60 Q120 80 110 120 Z" fill="#B54949"/>
+            <ellipse cx="90" cy="60" rx="35" ry="12" fill="#F7F5F0"/>
+            <path d="M60 60 Q90 30 120 60" stroke="#E86A56" stroke-width="3" fill="none"/>
+            <circle cx="75" cy="55" r="4" fill="#E86A56"/><circle cx="90" cy="48" r="4" fill="#E86A56"/><circle cx="105" cy="55" r="4" fill="#E86A56"/>
+          </svg>
+        </div>
+
+        <div class="quick-grid">
+          <div class="quick-item" onclick="goScreen('screen-news')"><div class="quick-icon" style="background:#E8F0F8;color:#4A90A4">📰</div><span>食讯快报</span></div>
+          <div class="quick-item" onclick="goScreen('screen-birthday')"><div class="quick-icon" style="background:#FFF0E8;color:#E86A56">🍜</div><span>生日面预约</span></div>
+          <div class="quick-item" onclick="goScreen('screen-wish')"><div class="quick-icon" style="background:#FDF2E8;color:#D4893C">💡</div><span>美食心愿</span></div>
+          <div class="quick-item" onclick="goScreen('screen-room')"><div class="quick-icon" style="background:#F0E8F8;color:#8B5FBF">🍵</div><span>包厢茶歇</span></div>
+          <div class="quick-item" onclick="goScreen('screen-faq')"><div class="quick-icon" style="background:#E8F5F0;color:#4A9B7F">❓</div><span>常见问题</span></div>
+          <div class="quick-item" onclick="goScreen('screen-sea')"><div class="quick-icon" style="background:#FCE8E8;color:#B54949">🌊</div><span>海的味道</span></div>
+          <div class="quick-item" onclick="goScreen('screen-phoenix')"><div class="quick-icon" style="background:#FFE9E2;color:#E86A56">🌺</div><span>凤凰花季</span></div>
+          <div class="quick-item" onclick="goScreen('screen-gate')"><div class="quick-icon" style="background:#EDE6FB;color:#8B5FBF">🗺️</div><span>校门觅食</span></div>
+        </div>
+
+        <div class="notice-bar">
+          <span class="bell">🔔</span>
+          <span>厦门大学 2026 年暑假食堂（餐厅）供应安排</span>
+          <span class="more-link" onclick="goScreen('screen-news')">更多</span>
+        </div>
+
+        <div class="section-title"><span>食堂信息</span><span class="more" onclick="goScreen('screen-canteen-list')">更多 »</span></div>
+
+        <div class="canteen-card" onclick="goScreen('screen-detail')">
+          <img src="images/canteen_qinye.jpg" alt="勤业餐厅">
+          <div class="canteen-info">
+            <div class="canteen-name">勤业餐厅</div>
+            <div class="canteen-meta"><span class="status-open">正常服务</span><span class="hours">早餐 6:30-9:30</span><span class="rating">★ 4.8</span></div>
+            <div class="crowd-badge lv-3"><span class="crowd-bars"><i></i><i></i><i></i><i></i></span><span class="crowd-label">较忙</span><span class="crowd-pct">72%</span></div>
+            <div class="canteen-tags"><span class="tag-pill">沙茶面</span><span class="tag-pill">海景位</span></div>
+          </div>
+        </div>
+        <div class="canteen-card" onclick="goScreen('screen-detail')">
+          <img src="images/canteen_nanguang.jpg" alt="南光餐厅">
+          <div class="canteen-info">
+            <div class="canteen-name">南光餐厅</div>
+            <div class="canteen-meta"><span class="status-open">正常服务</span><span class="hours">中餐 11:00-13:00</span><span class="rating">★ 4.7</span></div>
+            <div class="crowd-badge lv-2"><span class="crowd-bars"><i></i><i></i><i></i><i></i></span><span class="crowd-label">适中</span><span class="crowd-pct">48%</span></div>
+            <div class="canteen-tags"><span class="tag-pill">虾面</span><span class="tag-pill">老字号</span></div>
+          </div>
+        </div>
+
+        <!-- 厦大特色限定模块 -->
+        <div class="section-title"><span>🌺 厦大独有 · 限定体验</span><span class="more" onclick="goScreen('screen-phoenix')">全部 »</span></div>
+        <div class="feature-cards">
+          <div class="feature-card phoenix" onclick="goScreen('screen-phoenix')">
+            <div class="fc-emoji">🌺</div>
+            <div class="fc-info"><h4>凤凰花季 · 毕业限定</h4><p>限定美食 · 海景位预约 · 沙滩野餐</p></div>
+          </div>
+          <div class="feature-card gate" onclick="goScreen('screen-gate')">
+            <div class="fc-emoji">🗺️</div>
+            <div class="fc-info"><h4>厦大记忆 · 校门觅食</h4><p>校友味道 · 隧道涂鸦 · 沙坡尾曾厝垵</p></div>
+          </div>
+        </div>
+
+        <div class="section-title"><span>热门活动</span><span class="more" onclick="goScreen('screen-activity')">更多 »</span></div>
+        <div class="activity-card" onclick="goScreen('screen-activity')">
+          <div class="cover" style="background:linear-gradient(90deg,#FCE8E8 0%,#F5D4D4 100%);"><div><h3 style="color:#8A2E2E;">勤业沙茶面免费加料日</h3><p style="color:#A85858;">每周三 · 加料券限量发放</p></div></div>
+          <div class="body">
+            <div class="title-row"><span>周三限定</span><span class="fire-badge">火热</span></div>
+            <div class="joiners"><span>已有 126 人报名</span><span>进入活动 ›</span></div>
+          </div>
+        </div>
+
+        <div class="section-title"><span>热门笔记</span><span class="more" onclick="goScreen('screen-notes')">更多 »</span></div>
+        <div class="notes-grid">
+          <div class="note-card" onclick="goScreen('screen-note-detail')"><div class="img-wrap"><img src="images/satay.jpg" alt="勤业沙茶面加料攻略"></div><div class="info"><h4>勤业沙茶面加料攻略</h4><div class="footer"><div class="author"><div class="avatar">林</div><span>小林在厦大</span></div><span>♥ 56</span></div></div></div>
+          <div class="note-card" onclick="goScreen('screen-note-detail')"><div class="img-wrap"><img src="images/flame.jpg" alt="凤凰花下的午餐"></div><div class="info"><h4>凤凰花下的午餐</h4><div class="footer"><div class="author"><div class="avatar" style="background:var(--sea-blue)">陈</div><span>陈同学</span></div><span>♥ 42</span></div></div></div>
+          <div class="note-card" onclick="goScreen('screen-note-detail')"><div class="img-wrap"><img src="images/cafeteria.jpg" alt="海滨餐厅二楼新窗口"></div><div class="info"><h4>海滨餐厅二楼新窗口</h4><div class="footer"><div class="author"><div class="avatar" style="background:var(--phoenix-orange)">阿</div><span>阿伟</span></div><span>♥ 38</span></div></div></div>
+          <div class="note-card" onclick="goScreen('screen-note-detail')"><div class="img-wrap"><img src="images/breakfast.jpg" alt="5 元内早餐搭配"></div><div class="info"><h4>5 元内早餐搭配</h4><div class="footer"><div class="author"><div class="avatar" style="background:var(--open-green)">王</div><span>王吃货</span></div><span>♥ 31</span></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 美食地图 ===== -->
+    <div class="screen" id="screen-map">
+      <div class="nav-header">美食地图<div class="capsule"><span>···</span><span>◉</span></div></div>
+      <div class="map-toolbar">
+        <div class="map-select">思明校区 ▼</div>
+        <div class="map-search"><span>🔍</span><span>搜索食堂</span></div>
+      </div>
+      <div class="map-canvas">
+        <svg class="map-svg" viewBox="0 0 375 600" preserveAspectRatio="xMidYMid slice">
+          <defs><linearGradient id="sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#B8DDE8"/><stop offset="100%" stop-color="#D4E9F0"/></linearGradient><linearGradient id="land" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#E8F4E8"/><stop offset="100%" stop-color="#D4E8D4"/></linearGradient></defs>
+          <rect width="375" height="600" fill="url(#land)"/>
+          <path d="M0 450 Q80 430 160 460 T375 440 V600 H0 Z" fill="url(#sea)" opacity="0.7"/>
+          <ellipse cx="280" cy="220" rx="55" ry="35" fill="#C8E0C8" opacity="0.6"/>
+          <path d="M60 180 Q100 160 140 180 T220 170" stroke="#A8C4A0" stroke-width="18" fill="none" stroke-linecap="round"/>
+          <path d="M40 320 Q90 300 150 320 T260 310" stroke="#A8C4A0" stroke-width="14" fill="none" stroke-linecap="round"/>
+          <rect x="80" y="240" width="50" height="35" rx="4" fill="#B54949" opacity="0.85"/><path d="M80 240 L105 225 L130 240" fill="#8A2E2E"/>
+          <rect x="180" y="150" width="55" height="40" rx="4" fill="#B54949" opacity="0.85"/><path d="M180 150 L207 135 L235 150" fill="#8A2E2E"/>
+          <rect x="250" y="330" width="48" height="32" rx="4" fill="#B54949" opacity="0.85"/><path d="M250 330 L274 318 L298 330" fill="#8A2E2E"/>
+          <rect x="120" y="420" width="45" height="30" rx="4" fill="#4A90A4" opacity="0.7"/>
+          <text x="187" y="540" font-size="12" fill="#4A7A8A" text-anchor="middle">厦 门 海 滨</text>
+        </svg>
+        <div class="map-pin" style="left:105px;top:260px;" onclick="goScreen('screen-detail')"><div class="pin-body" style="background:var(--xmu-red)"><span>🍜</span></div><div class="pin-label">勤业餐厅</div></div>
+        <div class="map-pin" style="left:207px;top:175px;" onclick="goScreen('screen-detail')"><div class="pin-body" style="background:var(--xmu-red)"><span>🍱</span></div><div class="pin-label">南光餐厅</div></div>
+        <div class="map-pin" style="left:274px;top:350px;" onclick="goScreen('screen-detail')"><div class="pin-body" style="background:var(--phoenix-orange)"><span>🍲</span></div><div class="pin-label">芙蓉餐厅</div></div>
+        <div class="map-pin" style="left:142px;top:435px;" onclick="goScreen('screen-detail')"><div class="pin-body" style="background:var(--sea-blue)"><span>☕</span></div><div class="pin-label">海滨咖啡</div></div>
+        <div class="map-actions"><div class="map-btn">◎</div><div class="map-btn">☰</div></div>
+        <div class="map-float">
+          <div class="canteen-card" onclick="goScreen('screen-detail')">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='60'%3E%3Crect fill='%23D4C4B0' width='80' height='60'/%3E%3Ctext x='40' y='35' font-size='11' fill='%236B6560' text-anchor='middle'%3E勤业%3C/text%3E%3C/svg%3E">
+            <div class="canteen-info">
+              <div class="canteen-name">勤业餐厅</div>
+              <div class="canteen-meta"><span class="status-open">正常服务</span><span class="hours">距你 280m</span><span class="crowd lv-3"><span class="crowd-bars"><i></i><i></i><i></i><i></i></span><span class="crowd-label">较忙</span><span class="crowd-pct">72%</span></span><span class="rating">★ 4.8</span></div>
+              <div class="canteen-tags"><span class="tag-pill">沙茶面</span><span class="tag-pill">海景位</span></div>
+            </div>
+          </div>
+          <div style="text-align:right;margin-top:10px;"><span style="display:inline-block;background:var(--xmu-red);color:#fff;padding:6px 16px;border-radius:16px;font-size:13px;">导航去</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 美食笔记 ===== -->
+    <div class="screen" id="screen-notes">
+      <div class="nav-header">美食笔记<div class="capsule"><span>···</span><span>◉</span></div></div>
+      <div class="notes-top" style="padding:12px 16px;display:flex;gap:10px;">
+        <div class="btn" style="flex:1;background:var(--card);border-radius:12px;padding:12px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:14px;font-weight:500;box-shadow:var(--shadow);color:var(--xmu-red);cursor:pointer;" onclick="goScreen('screen-note-publish')"><span>＋</span><span>发布笔记</span></div>
+        <div class="btn" style="flex:1;background:var(--card);border-radius:12px;padding:12px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:14px;font-weight:500;box-shadow:var(--shadow);color:var(--sea-blue);cursor:pointer;" onclick="goScreen('screen-my-notes')"><span>📖</span><span>我的笔记</span></div>
+      </div>
+      <div class="sub-tabs"><span class="active">热门推荐</span><span onclick="goScreen('screen-notes')">美食推荐</span><span onclick="goScreen('screen-notes')">食堂活动</span></div>
+      <div class="notes-grid" style="padding-top:12px;">
+        <div class="note-card" onclick="goScreen('screen-note-detail')"><div class="img-wrap"><img src="images/satay.jpg" alt="勤业沙茶面加料攻略"></div><div class="info"><h4>勤业沙茶面加料攻略</h4><div class="footer"><div class="author"><div class="avatar">林</div><span>小林在厦大</span></div><span>♥ 56</span></div></div></div>
+        <div class="note-card" onclick="goScreen('screen-note-detail')"><div class="img-wrap"><img src="images/flame.jpg" alt="凤凰花下的午餐"></div><div class="info"><h4>凤凰花下的午餐</h4><div class="footer"><div class="author"><div class="avatar" style="background:var(--sea-blue)">陈</div><span>陈同学</span></div><span>♥ 42</span></div></div></div>
+        <div class="note-card" onclick="goScreen('screen-note-detail')"><div class="img-wrap"><img src="images/cafeteria.jpg" alt="海滨餐厅二楼新窗口测评"></div><div class="info"><h4>海滨餐厅二楼新窗口测评</h4><div class="footer"><div class="author"><div class="avatar" style="background:var(--phoenix-orange)">阿</div><span>阿伟</span></div><span>♥ 38</span></div></div></div>
+        <div class="note-card" onclick="goScreen('screen-note-detail')"><div class="img-wrap"><img src="images/breakfast.jpg" alt="5 元内早餐搭配"></div><div class="info"><h4>5 元内早餐搭配</h4><div class="footer"><div class="author"><div class="avatar" style="background:var(--open-green)">王</div><span>王吃货</span></div><span>♥ 31</span></div></div></div>
+        <div class="note-card" onclick="goScreen('screen-note-detail')"><div class="img-wrap"><img src="images/mala.jpg" alt="东苑麻辣香锅排队实况"></div><div class="info"><h4>东苑麻辣香锅排队实况</h4><div class="footer"><div class="author"><div class="avatar" style="background:#8B5FBF">李</div><span>李同学</span></div><span>♥ 27</span></div></div></div>
+        <div class="note-card" onclick="goScreen('screen-note-detail')"><div class="img-wrap"><img src="images/cafeteria.jpg" alt="翔安校区食堂红黑榜"></div><div class="info"><h4>翔安校区食堂红黑榜</h4><div class="footer"><div class="author"><div class="avatar" style="background:var(--xmu-red)">张</div><span>张学姐</span></div><span>♥ 65</span></div></div></div>
+      </div>
+    </div>
+
+    <!-- ===== 我的 ===== -->
+    <div class="screen" id="screen-profile">
+      <div class="profile-header">
+        <div class="profile-user">
+          <div class="profile-avatar">🎓</div>
+          <div><div class="profile-name">Phil</div><div class="profile-bio">厦大吃货一枚</div></div>
+          <div class="profile-actions"><span>✏️</span><span>⚙️</span></div>
+        </div>
+      </div>
+      <div class="points-card" onclick="goScreen('screen-points')">
+        <div class="points-icon">🌺</div>
+        <div class="points-text"><h3>凤凰花积分中心</h3><p>前往积分中心，兑换海量好礼</p></div>
+        <div class="points-num">0 ›</div>
+      </div>
+      <div class="section-title"><span>我的互动</span></div>
+      <div class="menu-grid">
+        <div class="menu-item" onclick="goGeneric('我的笔记')"><div class="menu-icon" style="background:#FFF0E8;color:#E86A56">📝</div><span>我的笔记</span></div>
+        <div class="menu-item" onclick="goGeneric('我的活动')"><div class="menu-icon" style="background:#FCE8E8;color:#B54949">🎁</div><span>我的活动</span></div>
+        <div class="menu-item" onclick="goGeneric('我的点赞')"><div class="menu-icon" style="background:#E8F0F8;color:#4A90A4">👍</div><span>我的点赞</span></div>
+        <div class="menu-item" onclick="goGeneric('我的收藏')"><div class="menu-icon" style="background:#F0E8F8;color:#8B5FBF">⭐</div><span>我的收藏</span></div>
+        <div class="menu-item" onclick="goGeneric('我回复的')"><div class="menu-icon" style="background:#E8F5F0;color:#4A9B7F">💬</div><span>我回复的</span></div>
+        <div class="menu-item" onclick="goGeneric('我的评价')"><div class="menu-icon" style="background:#FFF8E6;color:#D4A84B">📝</div><span>我的评价</span></div>
+        <div class="menu-item" onclick="goGeneric('浏览历史')"><div class="menu-icon" style="background:#F2EEEA;color:#6B6560">👣</div><span>浏览历史</span></div>
+        <div class="menu-item" onclick="goGeneric('我的建议')"><div class="menu-icon" style="background:#E8F4E8;color:#5A8B5A">💡</div><span>我的建议</span></div>
+      </div>
+    </div>
+
+    <!-- ===== 食堂详情 ===== -->
+    <div class="screen" id="screen-detail">
+      <div class="nav-header"><div class="back" onclick="goBack()">‹</div>勤业餐厅<div class="capsule"><span>···</span><span>◉</span></div></div>
+      <div class="detail-page">
+        <div class="detail-hero"><img src="images/canteen_interior.jpg" alt="勤业餐厅内景"></div>
+        <div class="detail-body">
+          <div class="detail-title-row" style="display:flex;justify-content:space-between;align-items:flex-start;"><h1>勤业餐厅</h1><span class="status-open">正常服务</span></div>
+          <div class="detail-meta" style="display:flex;align-items:center;gap:10px;margin-top:10px;font-size:13px;color:var(--subtext);"><span class="rating">★★★★★ 4.8分</span><span>评价 128 条</span></div>
+          <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+            <div class="info-row" style="display:flex;align-items:center;gap:10px;font-size:14px;margin-bottom:12px;"><span class="icon" style="color:var(--xmu-red)">🕐</span><span>早餐 6:30-9:30；中餐 11:00-13:00；晚餐 17:00-19:00</span></div>
+            <div class="info-row" style="display:flex;align-items:center;gap:10px;font-size:14px;margin-bottom:12px;"><span class="icon" style="color:var(--xmu-red)">📞</span><span>0592-2180000</span></div>
+            <div class="info-row" style="display:flex;align-items:center;gap:10px;font-size:14px;"><span class="icon" style="color:var(--xmu-red)">📍</span><span>厦门大学思明校区勤业楼</span><span style="margin-left:auto;color:var(--sea-blue)">美食地图导航 ›</span></div>
+          </div>
+        </div>
+        <div class="crowd-card">
+          <div class="crowd-card-head"><span>📊 实时拥挤度</span><span class="crowd-time">更新于 12:08</span></div>
+          <div class="crowd-card-body">
+            <div class="crowd-now">
+              <div class="lv-tag lv-3">较忙</div>
+              <div class="lv-pct">约 72%</div>
+              <div class="lv-tip">预计 13:00 后<br>人流逐渐回落</div>
+            </div>
+            <div class="crowd-hours">
+              <div class="ch-col"><span class="ch-bar" style="height:26%;background:var(--open-green)"></span><span class="ch-name">早餐</span></div>
+              <div class="ch-col"><span class="ch-bar" style="height:84%;background:var(--xmu-red)"></span><span class="ch-name">午餐</span></div>
+              <div class="ch-col"><span class="ch-bar" style="height:34%;background:#D9A441"></span><span class="ch-name">下午</span></div>
+              <div class="ch-col"><span class="ch-bar" style="height:58%;background:var(--phoenix-orange)"></span><span class="ch-name">晚餐</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="detail-tabs" style="display:flex;gap:20px;padding:16px;background:var(--card);border-bottom:1px solid var(--border);">
+          <span class="active" data-tab="dishes" onclick="switchDetailTab('dishes')">菜品</span>
+          <span data-tab="reviews" onclick="switchDetailTab('reviews')">评价</span>
+          <span data-tab="activities" onclick="switchDetailTab('activities')">活动</span>
+          <span data-tab="notes" onclick="switchDetailTab('notes')">笔记</span>
+          <span data-tab="stalls" onclick="switchDetailTab('stalls')">档口</span>
+        </div>
+        <div class="tab-panel active" data-tab="dishes">
+          <div class="dish-filter"><span class="active" data-filter="all" onclick="filterDishes('all')">全部</span><span data-filter="yitang" onclick="filterDishes('yitang')">一堂一品</span><span data-filter="minnan" onclick="filterDishes('minnan')">闽南风味</span><span data-filter="new" onclick="filterDishes('new')">新品</span><span data-filter="veg" onclick="filterDishes('veg')">素食</span></div>
+          <div class="dish-list">
+            <div class="dish-item" data-filter="minnan yitang"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect fill='%23E8D4C4' width='80' height='80'/%3E%3Ctext x='40' y='45' font-size='10' fill='%236B6560' text-anchor='middle'%3E沙茶面%3C/text%3E%3C/svg%3E"><div class="dish-info"><div class="dish-name">勤业沙茶面</div><div class="dish-window">一楼 · 3 号窗口</div><div class="dish-price">¥ 8 起</div><div class="dish-tags"><span class="tag-pill" style="background:#FFF0E8;color:#E86A56">推荐</span><span class="tag-pill">可加料</span></div></div></div>
+            <div class="dish-item" data-filter="minnan new"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect fill='%23C8D8C4' width='80' height='80'/%3E%3Ctext x='40' y='45' font-size='10' fill='%236B6560' text-anchor='middle'%3E海蛎煎%3C/text%3E%3C/svg%3E"><div class="dish-info"><div class="dish-name">闽南海蛎煎</div><div class="dish-window">二楼 · 小吃档</div><div class="dish-price">¥ 12</div><div class="dish-tags"><span class="tag-pill" style="background:#E8F5F0;color:#4A9B7F">新品</span></div></div></div>
+            <div class="dish-item" data-filter="yitang veg"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect fill='%23FCE7D8' width='80' height='80'/%3E%3Ctext x='40' y='45' font-size='10' fill='%236B6560' text-anchor='middle'%3E花生汤%3C/text%3E%3C/svg%3E"><div class="dish-info"><div class="dish-name">古早味花生汤</div><div class="dish-window">一楼 · 早餐区</div><div class="dish-price">¥ 4</div><div class="dish-tags"><span class="tag-pill">早餐</span><span class="tag-pill">素食</span></div></div></div>
+          </div>
+          <div class="empty-tip" id="dish-empty" style="display:none;">该分类下暂无菜品，换个标签看看～</div>
+        </div>
+        <div class="tab-panel" data-tab="reviews">
+          <div class="review-list">
+            <div class="review-item">
+              <div class="review-head"><div class="avatar">阿</div><div class="review-meta"><div class="review-name">阿伟</div><div class="review-stars">★★★★★</div></div><span class="review-date">2026-07-28</span></div>
+              <div class="review-body">沙茶面汤头很浓，加料后超满足，周末中午人多记得错峰。</div>
+            </div>
+            <div class="review-item">
+              <div class="review-head"><div class="avatar" style="background:var(--sea-blue)">L</div><div class="review-meta"><div class="review-name">Lily</div><div class="review-stars">★★★★☆</div></div><span class="review-date">2026-07-25</span></div>
+              <div class="review-body">海景位很舒服，但上菜稍慢，建议早点来占位。</div>
+            </div>
+            <div class="review-item">
+              <div class="review-head"><div class="avatar" style="background:var(--phoenix-orange)">夏</div><div class="review-meta"><div class="review-name">厦小岛</div><div class="review-stars">★★★★★</div></div><span class="review-date">2026-07-20</span></div>
+              <div class="review-body">早餐区的花生汤一定要试，配油条绝配。</div>
+            </div>
+          </div>
+        </div>
+        <div class="tab-panel" data-tab="activities">
+          <div style="padding:16px;">
+            <div class="activity-card" onclick="goScreen('screen-activity')">
+              <div class="cover" style="background:linear-gradient(90deg,#FCE8E8 0%,#F5D4D4 100%);"><div><h3>勤业沙茶面免费加料日</h3><p>每周三 · 加料券限量发放</p></div></div>
+              <div class="body"><div class="title-row"><span>周三限定</span><span class="fire-badge">火热</span></div><div class="joiners"><span>已有 126 人报名</span><span>›</span></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="tab-panel" data-tab="notes">
+          <div class="notes-grid" style="padding:16px;">
+            <div class="note-card" onclick="goScreen('screen-note-detail')">
+              <div class="img-wrap"><img src="images/satay.jpg" alt="勤业沙茶面加料攻略"></div>
+              <div class="info"><h4>勤业沙茶面加料攻略</h4><div class="footer"><div class="author"><div class="avatar" style="background:var(--phoenix-orange)">阿</div><span>阿伟</span></div><span>♥ 38</span></div></div>
+            </div>
+            <div class="note-card" onclick="goScreen('screen-note-detail')">
+              <div class="img-wrap"><img src="images/cafeteria.jpg" alt="海滨餐厅二楼新窗口测评"></div>
+              <div class="info"><h4>海滨餐厅二楼新窗口测评</h4><div class="footer"><div class="author"><div class="avatar" style="background:var(--sea-blue)">小</div><span>小夏</span></div><span>♥ 24</span></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="tab-panel" data-tab="stalls">
+          <div style="padding:16px 0;">
+            <div class="list-card"><div style="display:flex;justify-content:space-between;align-items:center;"><span class="lc-title">3 号窗口 · 沙茶面</span><span class="stall-floor">一楼</span></div><div class="lc-meta">招牌：勤业沙茶面 · 可加料</div></div>
+            <div class="list-card"><div style="display:flex;justify-content:space-between;align-items:center;"><span class="lc-title">小吃档 · 海蛎煎</span><span class="stall-floor">二楼</span></div><div class="lc-meta">招牌：闽南海蛎煎 · 现点现煎</div></div>
+            <div class="list-card"><div style="display:flex;justify-content:space-between;align-items:center;"><span class="lc-title">早餐区 · 古早味</span><span class="stall-floor">一楼</span></div><div class="lc-meta">招牌：花生汤 · 油条 · 面线糊</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 食堂列表 ===== -->
+    <div class="screen" id="screen-canteen-list">
+      <div class="nav-header"><div class="back" onclick="goBack()">‹</div>食堂列表</div>
+      <div class="search-bar"><div class="search-input"><span>🔍</span><span>搜索食堂名称</span></div></div>
+      <div class="sub-tabs"><span class="active">全部</span><span>思明校区</span><span>翔安校区</span><span>漳州校区</span></div>
+      <div class="crowd-legend">
+        <span><i style="background:var(--open-green)"></i>空闲</span>
+        <span><i style="background:#D9A441"></i>适中</span>
+        <span><i style="background:var(--phoenix-orange)"></i>较忙</span>
+        <span><i style="background:var(--xmu-red)"></i>爆满</span>
+      </div>
+      <div class="canteen-card" onclick="goScreen('screen-detail')"><img src="images/canteen_qinye_list.jpg"><div class="canteen-info"><div class="canteen-name">勤业餐厅</div><div class="canteen-meta"><span class="status-open">正常服务</span><span class="crowd lv-3"><span class="crowd-bars"><i></i><i></i><i></i><i></i></span><span class="crowd-label">较忙</span><span class="crowd-pct">72%</span></span><span class="rating">★ 4.8</span></div><div class="canteen-tags"><span class="tag-pill">沙茶面</span><span class="tag-pill">海景位</span></div></div></div>
+      <div class="canteen-card" onclick="goScreen('screen-detail')"><img src="images/canteen_nanguang_list.jpg"><div class="canteen-info"><div class="canteen-name">南光餐厅</div><div class="canteen-meta"><span class="status-open">正常服务</span><span class="crowd lv-2"><span class="crowd-bars"><i></i><i></i><i></i><i></i></span><span class="crowd-label">适中</span><span class="crowd-pct">48%</span></span><span class="rating">★ 4.7</span></div><div class="canteen-tags"><span class="tag-pill">虾面</span><span class="tag-pill">老字号</span></div></div></div>
+      <div class="canteen-card" onclick="goScreen('screen-detail')"><img src="images/canteen_furong.jpg"><div class="canteen-info"><div class="canteen-name">芙蓉餐厅</div><div class="canteen-meta"><span class="status-open">正常服务</span><span class="crowd lv-1"><span class="crowd-bars"><i></i><i></i><i></i><i></i></span><span class="crowd-label">空闲</span><span class="crowd-pct">30%</span></span><span class="rating">★ 4.6</span></div><div class="canteen-tags"><span class="tag-pill">小炒</span><span class="tag-pill">夜宵</span></div></div></div>
+      <div class="canteen-card" onclick="goScreen('screen-detail')"><img src="images/canteen_haibin.jpg"><div class="canteen-info"><div class="canteen-name">海滨餐厅</div><div class="canteen-meta"><span class="status-open">正常服务</span><span class="crowd lv-3"><span class="crowd-bars"><i></i><i></i><i></i><i></i></span><span class="crowd-label">较忙</span><span class="crowd-pct">65%</span></span><span class="rating">★ 4.5</span></div><div class="canteen-tags"><span class="tag-pill">海景位</span><span class="tag-pill">火锅</span></div></div></div>
+      <div class="canteen-card" onclick="goScreen('screen-detail')"><img src="images/canteen_jingfeng.jpg"><div class="canteen-info"><div class="canteen-name">竞丰餐厅（翔安）</div><div class="canteen-meta"><span class="status-closed">暂停营业</span><span class="rating">★ 4.4</span></div><div class="canteen-tags"><span class="tag-pill">综合</span></div></div></div>
+    </div>
+
+    <!-- ===== 食讯快报（资讯列表） ===== -->
+    <div class="screen" id="screen-news">
+      <div class="nav-header"><div class="back" onclick="goBack()">‹</div>食讯快报</div>
+      <div class="search-bar"><div class="search-input"><span>🔍</span><span>搜索资讯</span></div></div>
+      <div class="sub-tabs"><span class="active">全部</span><span onclick="goScreen('screen-news')">美食推荐</span><span onclick="goScreen('screen-news')">师生活动</span><span onclick="goScreen('screen-news')">服务信息</span></div>
+      <div class="news-card" onclick="goScreen('screen-news-detail')"><h3>厦门大学 2026 年暑假食堂（餐厅）供应安排</h3><div class="news-meta"><span class="news-cat">服务信息</span><span>2026-07-20</span><span>👁 1203</span></div></div>
+      <div class="news-card" onclick="goScreen('screen-news-detail')"><h3>「食在厦大」闽南古早味月活动启动</h3><div class="news-meta"><span class="news-cat">师生活动</span><span>2026-07-15</span><span>👁 862</span></div></div>
+      <div class="news-card" onclick="goScreen('screen-news-detail')"><h3>勤业餐厅沙茶面窗口升级，新增 5 种加料</h3><div class="news-meta"><span class="news-cat">美食推荐</span><span>2026-07-10</span><span>👁 645</span></div></div>
+      <div class="news-card" onclick="goScreen('screen-news-detail')"><h3>关于学生食堂食材溯源公示的通知</h3><div class="news-meta"><span class="news-cat">服务信息</span><span>2026-07-05</span><span>👁 540</span></div></div>
+    </div>
+
+    <!-- ===== 资讯详情 ===== -->
+    <div class="screen" id="screen-news-detail">
+      <div class="nav-header"><div class="back" onclick="goBack()">‹</div>资讯详情<div class="capsule"><span>···</span><span>◉</span></div></div>
+      <div class="detail-page">
+        <div class="detail-hero"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='375' height='200'%3E%3Crect fill='%23FCE7D8' width='375' height='200'/%3E%3Ctext x='187' y='105' font-size='16' fill='%236B6560' text-anchor='middle'%3E活动头图%3C/text%3E%3C/svg%3E"></div>
+        <div class="detail-body">
+          <h1>「食在厦大」闽南古早味月活动启动</h1>
+          <div class="detail-sub"><span>后勤集团</span><span>2026-07-15</span><span>👁 862</span></div>
+          <div class="detail-content">
+            <p>为弘扬闽南饮食文化，让同学们在校也能尝到家乡味，后勤集团将于 7 月启动「闽南古早味月」系列活动。</p>
+            <p>活动期间，各校区食堂将限时供应沙茶面、海蛎煎、姜母鸭、土笋冻、花生汤等闽南特色美食，并同步开展家乡菜征集与厨艺展示。</p>
+            <p>欢迎同学们在「美食笔记」中分享你的闽南味道故事，参与互动即可获得凤凰花积分。</p>
+          </div>
+          <div class="detail-tags"><span class="tag-pill">#闽南古早味</span><span class="tag-pill">#校园活动</span><span class="tag-pill">#凤凰花积分</span></div>
+        </div>
+        <div class="bottom-bar">
+          <div class="icon-btn" style="font-size:20px;">👍<span>赞 86</span></div>
+          <div class="icon-btn" style="font-size:20px;">⭐<span>收藏</span></div>
+          <div class="action-btn">分享给同学</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 活动详情 ===== -->
+    <div class="screen" id="screen-activity">
+      <div class="nav-header"><div class="back" onclick="goBack()">‹</div>勤业沙茶面免费加料日<div class="capsule"><span>···</span><span>◉</span></div></div>
+      <div class="detail-page">
+        <div class="detail-hero" style="background:linear-gradient(90deg,#FCE8E8 0%,#F5D4D4 100%);"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='375' height='200'%3E%3Crect fill='none' width='375' height='200'/%3E%3Ctext x='187' y='105' font-size='18' fill='%238A2E2E' text-anchor='middle'%3E勤业沙茶面免费加料日%3C/text%3E%3C/svg%3E" style="object-fit:contain;background:transparent;"></div>
+        <div class="detail-body">
+          <h1>勤业沙茶面免费加料日</h1>
+          <div class="detail-sub"><span>🔥 126 人已报名</span><span>📅 每周三 11:00-13:00</span></div>
+          <div class="detail-content">
+            <p>📍 思明校区 · 勤业餐厅一楼 3 号窗口</p>
+            <p>活动内容：每周三午餐时段，前 200 名同学可领取一张「加料券」，沙茶面可免费加一份指定配料（大肠 / 豆干 / 海蛎 / 卤蛋四选一）。</p>
+            <p>参与方式：打开小程序 → 进入本活动 → 点击「我要参加」 → 周三当天到店出示报名二维码即可兑换。</p>
+            <p>温馨提示：券限量发放，建议 11:00 开餐前到场；可叠加凤凰花积分兑换额外加料。</p>
+          </div>
+        </div>
+        <div class="sub-tabs" style="background:var(--card);"><span class="active" data-tab="info" onclick="switchActivityTab('info')">活动详情</span><span data-tab="signup" onclick="switchActivityTab('signup')">报名名单</span></div>
+        <div class="sub-panel" data-tab="signup" style="display:none; margin:16px; background:var(--card); border-radius:16px; padding:16px; box-shadow:var(--shadow);">
+          <h3 style="font-size:16px; margin-bottom:12px;">报名名单（126 人）</h3>
+          <div class="comment-item"><div class="avatar" style="background:var(--xmu-red)">林</div><div class="c-body"><div class="c-name">小林在厦大</div><div class="c-text">已报名 · 思明校区勤业餐厅</div><div class="c-time">08-04</div></div></div>
+          <div class="comment-item"><div class="avatar" style="background:var(--sea-blue)">陈</div><div class="c-body"><div class="c-name">陈同学</div><div class="c-text">已报名 · 思明校区勤业餐厅</div><div class="c-time">08-05</div></div></div>
+          <div class="comment-item"><div class="avatar" style="background:var(--phoenix-orange)">阿</div><div class="c-body"><div class="c-name">阿伟</div><div class="c-text">已报名 · 海滨餐厅海景位</div><div class="c-time">08-05</div></div></div>
+        </div>
+        <div class="bottom-bar"><div class="icon-btn" style="font-size:20px;">👍<span>86</span></div><div class="action-btn">我要参加</div></div>
+      </div>
+    </div>
+
+    <!-- ===== 笔记详情 ===== -->
+    <div class="screen" id="screen-note-detail">
+      <div class="nav-header"><div class="back" onclick="goBack()">‹</div>笔记详情<div class="capsule"><span>···</span><span>◉</span></div></div>
+      <div class="detail-page">
+        <div class="detail-hero"><img src="images/satay.jpg" alt="勤业沙茶面"></div>
+        <div class="detail-body">
+          <h1>勤业沙茶面加料攻略</h1>
+          <div class="detail-sub"><div class="author" style="display:flex;align-items:center;gap:6px;"><div class="avatar">林</div><span>小林在厦大</span></div><span>2026-07-18</span></div>
+          <div class="detail-content">
+            <p>勤业的沙茶面一直是我的食堂首选，分享几个加料小技巧：</p>
+            <p>1. 加一份豆干和大肠，汤头更浓郁；2. 午餐时段 11:30 前人少，不用排队；3. 海景位在靠窗，建议早去。</p>
+          </div>
+          <div class="detail-tags"><span class="tag-pill">#思明·勤业</span><span class="tag-pill">#沙茶面</span><span class="tag-pill">#攻略</span></div>
+          <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:16px;">
+            <h4 style="font-size:15px;margin-bottom:8px;">评论 12</h4>
+            <div class="comment-item"><div class="avatar" style="background:var(--sea-blue)">陈</div><div class="c-body"><div class="c-name">陈同学</div><div class="c-text">蹲一个海景位，谢谢博主！</div><div class="c-time">07-18</div></div></div>
+            <div class="comment-item"><div class="avatar" style="background:var(--phoenix-orange)">阿</div><div class="c-body"><div class="c-name">阿伟</div><div class="c-text">大肠确实绝，已加。</div><div class="c-time">07-19</div></div></div>
+          </div>
+        </div>
+        <div class="bottom-bar">
+          <div class="icon-btn" style="font-size:20px;">👍<span>56</span></div>
+          <div class="icon-btn" style="font-size:20px;">⭐<span>收藏</span></div>
+          <div class="icon-btn" style="font-size:20px;">💬<span>评论</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 发布笔记 ===== -->
+    <div class="screen" id="screen-note-publish">
+      <div class="nav-header"><div class="back" onclick="goBack()">‹</div>发布笔记<span class="right-text" onclick="alert('已发布（原型演示）')">发布</span></div>
+      <div class="form-page">
+        <div class="form-group"><label>标题</label><input class="form-input" placeholder="给这顿饭起个名字"></div>
+        <div class="form-group"><label>内容</label><textarea class="form-textarea" placeholder="分享你的美食体验…"></textarea></div>
+        <div class="form-group"><label>添加图片</label><div class="img-upload"><div class="box">＋</div><div class="box">＋</div><div class="box">＋</div></div></div>
+        <div class="form-group"><label>选择食堂</label><div class="seg"><div class="seg-item active">勤业餐厅</div><div class="seg-item">南光餐厅</div><div class="seg-item">芙蓉餐厅</div><div class="seg-item">海滨餐厅</div></div></div>
+        <div class="form-group"><label>标签</label><div class="seg"><div class="seg-item">#攻略</div><div class="seg-item">#新品</div><div class="seg-item">#闽南味</div><div class="seg-item">#海景位</div></div></div>
+        <button class="submit-btn" onclick="alert('已发布（原型演示）')">发布笔记</button>
+      </div>
+    </div>
+
+    <!-- ===== 我的笔记 ===== -->
+    <div class="screen" id="screen-my-notes">
+      <div class="nav-header"><div class="back" onclick="goBack()">‹</div>我的笔记</div>
+      <div class="notes-grid" style="padding:16px;">
+        <div class="note-card" onclick="goScreen('screen-note-detail')"><div class="img-wrap"><img src="images/satay.jpg" alt="我发的勤业沙茶面测评"></div><div class="info"><h4>我发的勤业沙茶面测评</h4><div class="footer"><span>草稿</span><span>♥ 12</span></div></div></div>
+        <div class="note-card" onclick="goScreen('screen-note-detail')"><div class="img-wrap"><img src="images/cafeteria.jpg" alt="芙蓉夜宵打卡"></div><div class="info"><h4>芙蓉夜宵打卡</h4><div class="footer"><span>已发布</span><span>♥ 8</span></div></div></div>
+      </div>
+    </div>
+
+    <!-- ===== 生日面预约 ===== -->
+    <div class="screen" id="screen-birthday">
+      <div class="nav-header"><div class="back" onclick="goBack()">‹</div>生日面预约</div>
+      <div class="intro-banner"><div><h2>🍜 厦大生日面</h2><p>凭学生证免费领取一碗长寿面，记得提前预约</p></div></div>
+      <div class="form-page">
+        <div class="form-group"><label>姓名</label><input class="form-input" placeholder="请输入姓名"></div>
+        <div class="form-group"><label>学工号</label><input class="form-input" placeholder="请输入学工号"></div>
+        <div class="form-group"><label>校区</label><div class="seg"><div class="seg-item active">思明</div><div class="seg-item">翔安</div><div class="seg-item">漳州</div></div></div>
+        <div class="form-group"><label>预约食堂</label><div class="seg"><div class="seg-item active">勤业餐厅</div><div class="seg-item">南光餐厅</div><div class="seg-item">海滨餐厅</div></div></div>
+        <div class="form-group"><label>预约日期</label><input class="form-input" type="date"></div>
+        <div class="form-group"><label>用餐人数</label><div class="seg"><div class="seg-item active">1 人</div><div class="seg-item">2-4 人</div><div class="seg-item">5-8 人</div></div></div>
+        <div class="form-group"><label>备注（忌口/祝福语）</label><textarea class="form-textarea" placeholder="例如：不要香菜"></textarea></div>
+        <button class="submit-btn" onclick="alert('预约提交成功（原型演示）')">提交预约</button>
+      </div>
+    </div>
+
+    <!-- ===== 美食心愿 ===== -->
+    <div class="screen" id="screen-wish">
+      <div class="nav-header"><div class="back" onclick="goBack()">‹</div>美食心愿</div>
+      <div class="intro-banner"><div><h2>💡 美食心愿墙</h2><p>想吃却没有？告诉后勤，说不定就安排上了</p></div></div>
+      <div class="form-page">
+        <div class="form-group"><label>心愿菜品 / 窗口</label><input class="form-input" placeholder="例如：希望勤业开个麻辣烫窗口"></div>
+        <div class="form-group"><label>希望出现的食堂</label><div class="seg"><div class="seg-item active">勤业餐厅</div><div class="seg-item">南光餐厅</div><div class="seg-item">芙蓉餐厅</div><div class="seg-item">海滨餐厅</div></div></div>
+        <div class="form-group"><label>详细说明</label><textarea class="form-textarea" placeholder="说说你的想法…"></textarea></div>
+        <button class="submit-btn" onclick="alert('心愿已提交（原型演示）')">提交心愿</button>
+      </div>
+    </div>
+
+    <!-- ===== 包厢茶歇 ===== -->
+    <div class="screen" id="screen-room">
+      <div class="nav-header"><div class="back" onclick="goBack()">‹</div>包厢茶歇预订</div>
+      <div class="intro-banner"><div><h2>🍵 包厢 / 茶歇</h2><p>班级聚餐、导师组会、社团活动都能订</p></div></div>
+      <div class="form-page">
+        <div class="form-group"><label>校区</label><div class="seg"><div class="seg-item active">思明</div><div class="seg-item">翔安</div><div class="seg-item">漳州</div></div></div>
+        <div class="form-group"><label>包厢类型</label><div class="seg"><div class="seg-item active">小包厢（≤8人）</div><div class="seg-item">中包厢（≤20人）</div><div class="seg-item">茶歇外送</div></div></div>
+        <div class="form-group"><label>预订日期</label><input class="form-input" type="date"></div>
+        <div class="form-group"><label>联系人 / 电话</label><input class="form-input" placeholder="姓名 + 手机号"></div>
+        <div class="form-group"><label>备注</label><textarea class="form-textarea" placeholder="用途、餐标等"></textarea></div>
+        <button class="submit-btn" onclick="alert('预订申请已提交（原型演示）')">提交预订</button>
+      </div>
+    </div>
+
+    <!-- ===== 常见问题 ===== -->
+    <div class="screen" id="screen-faq">
+      <div class="nav-header"><div class="back" onclick="goBack()">‹</div>常见问题</div>
+      <div class="search-bar"><div class="search-input"><span>🔍</span><span>搜索问题关键词</span></div></div>
+      <div class="faq-item" onclick="this.classList.toggle('open')"><div class="faq-q">食堂营业时间怎么查？<span class="arrow">›</span></div><div class="faq-a">首页「今日营业」或各食堂详情页均可查看当日营业状态和时段。</div></div>
+      <div class="faq-item" onclick="this.classList.toggle('open')"><div class="faq-q">生日面怎么预约？<span class="arrow">›</span></div><div class="faq-a">在首页快捷入口「生日面预约」填写信息，凭学生证到店领取。</div></div>
+      <div class="faq-item" onclick="this.classList.toggle('open')"><div class="faq-q">凤凰花积分有什么用？<span class="arrow">›</span></div><div class="faq-a">积分可在「凤凰花积分中心」兑换食堂代金券或校园周边。</div></div>
+      <div class="faq-item" onclick="this.classList.toggle('open')"><div class="faq-q">如何发布美食笔记？<span class="arrow">›</span></div><div class="faq-a">进入「美食笔记」Tab，点击「发布笔记」即可上传图文。</div></div>
+      <div class="faq-item" onclick="this.classList.toggle('open')"><div class="faq-q">寒暑假哪些食堂开放？<span class="arrow">›</span></div><div class="faq-a">请关注「食讯快报」中的假期供应安排通知。</div></div>
+    </div>
+
+    <!-- ===== 海的味道 ===== -->
+    <div class="screen" id="screen-sea">
+      <div class="nav-header"><div class="back" onclick="goBack()">‹</div>海的味道</div>
+      <div class="intro-banner"><div><h2>🌊 海的味道</h2><p>厦大临海，这些闽南风味不容错过</p></div></div>
+      <div class="canteen-card" onclick="goScreen('screen-detail')"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='70'%3E%3Crect fill='%23E8D4C4' width='90' height='70'/%3E%3Ctext x='45' y='40' font-size='11' fill='%236B6560' text-anchor='middle'%3E沙茶面%3C/text%3E%3C/svg%3E"><div class="canteen-info"><div class="canteen-name">勤业沙茶面</div><div class="canteen-meta"><span class="rating">★ 推荐</span><span class="hours">一楼 3 号窗口</span></div><div class="canteen-tags"><span class="tag-pill">闽南风味</span><span class="tag-pill">可加料</span></div></div></div>
+      <div class="list-card" onclick="goScreen('screen-detail')"><div class="lc-title">南光虾面</div><div class="lc-meta">老字号 · 汤头鲜甜 · 中餐供应</div></div>
+      <div class="list-card" onclick="goScreen('screen-detail')"><div class="lc-title">海滨餐厅 · 海蛎煎</div><div class="lc-meta">现煎 · 配甜辣酱 · 海景位可选</div></div>
+      <div class="list-card" onclick="goScreen('screen-detail')"><div class="lc-title">姜母鸭（活动限定）</div><div class="lc-meta">古法砂锅 · 闽南古早味月供应</div></div>
+      <div class="list-card" onclick="goScreen('screen-detail')"><div class="lc-title">古早味花生汤</div><div class="lc-meta">早餐 · 甜而不腻 · ¥4</div></div>
+    </div>
+
+    <!-- ===== 凤凰花积分中心 ===== -->
+    <div class="screen" id="screen-points">
+      <div class="nav-header"><div class="back" onclick="goBack()">‹</div>凤凰花积分中心</div>
+      <div class="points-hero"><div class="num">🌺 0</div><div class="lbl">当前凤凰花积分</div></div>
+      <div class="section-title" style="padding:16px 16px 4px;"><span>做任务赚积分</span></div>
+      <div class="task-item"><div class="t-icon">📅</div><div class="t-info"><h4>每日签到</h4><p>连续签到积分翻倍</p></div><div class="t-btn">+5</div></div>
+      <div class="task-item"><div class="t-icon">📝</div><div class="t-info"><h4>发布美食笔记</h4><p>每篇审核通过得积分</p></div><div class="t-btn">+20</div></div>
+      <div class="task-item"><div class="t-icon">⭐</div><div class="t-info"><h4>评价食堂</h4><p>帮助同学做选择</p></div><div class="t-btn">+10</div></div>
+      <div class="task-item"><div class="t-icon">👥</div><div class="t-info"><h4>邀请同学</h4><p>双方各得积分</p></div><div class="t-btn">+30</div></div>
+      <div class="section-title" style="padding:16px 16px 4px;"><span>积分兑换</span></div>
+      <div class="notes-grid" style="padding:0 16px 20px;">
+        <div class="note-card"><div class="img-wrap" style="background:linear-gradient(135deg,#FCE8E8,#FAD0B7)"></div><div class="info"><h4>食堂代金券 ¥5</h4><div class="footer"><span>🌺 200</span><span>兑换</span></div></div></div>
+        <div class="note-card"><div class="img-wrap" style="background:linear-gradient(135deg,#E8F0F8,#D0E0F0)"></div><div class="info"><h4>厦大帆布包</h4><div class="footer"><span>🌺 500</span><span>兑换</span></div></div></div>
+      </div>
+    </div>
+
+    <!-- ===== 搜索结果 ===== -->
+    <div class="screen" id="screen-search">
+      <div class="nav-header"><div class="back" onclick="goBack()">‹</div>搜索</div>
+      <div class="search-bar"><div class="search-input"><span>🔍</span><input class="form-input" style="border:none;padding:0;background:transparent;" placeholder="搜索食堂、菜品、笔记"></div></div>
+      <div style="padding:0 16px;"><div style="font-size:13px;color:var(--subtext);margin:8px 0;">热门搜索</div><div class="seg"><div class="seg-item" onclick="goScreen('screen-detail')">沙茶面</div><div class="seg-item">勤业餐厅</div><div class="seg-item">海蛎煎</div><div class="seg-item">生日面</div></div></div>
+      <div class="section-title"><span>搜索结果（示例）</span></div>
+      <div class="canteen-card" onclick="goScreen('screen-detail')"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='70'%3E%3Crect fill='%23E8D4C4' width='90' height='70'/%3E%3Ctext x='45' y='40' font-size='11' fill='%236B6560' text-anchor='middle'%3E沙茶面%3C/text%3E%3C/svg%3E"><div class="canteen-info"><div class="canteen-name">勤业沙茶面</div><div class="canteen-meta"><span class="status-open">正常服务</span><span class="rating">★ 推荐</span></div><div class="canteen-tags"><span class="tag-pill">闽南风味</span></div></div></div>
+      <div class="note-card" style="margin:0 16px 12px;" onclick="goScreen('screen-note-detail')"><div class="img-wrap"><img src="images/satay.jpg" alt="勤业沙茶面加料攻略"></div><div class="info"><h4>勤业沙茶面加料攻略</h4><div class="footer"><div class="author"><div class="avatar">林</div><span>小林在厦大</span></div><span>♥ 56</span></div></div></div>
+    </div>
+
+    <!-- ===== 凤凰花季·毕业限定 ===== -->
+    <div class="screen" id="screen-phoenix">
+      <div class="nav-header"><div class="back" onclick="goBack()">‹</div>凤凰花季</div>
+      <div class="phoenix-hero">
+        <h2>🌺 凤凰花开的季节</h2>
+        <p>毕业季限定 · 厦大独有的浪漫仪式</p>
+        <div class="countdown">
+          <div class="cd-box"><div class="cd-num">41</div><div class="cd-lbl">天</div></div>
+          <div class="cd-box"><div class="cd-num">06</div><div class="cd-lbl">时</div></div>
+          <div class="cd-box"><div class="cd-num">12</div><div class="cd-lbl">分</div></div>
+        </div>
+      </div>
+
+      <div class="section-title"><span>毕业季限定美食</span></div>
+      <div class="list-card" onclick="goScreen('screen-detail')"><div class="lc-title">🌺 凤凰花毕业蛋糕</div><div class="lc-meta">芙蓉餐厅限定 · 提前 3 天预订</div></div>
+      <div class="list-card" onclick="goScreen('screen-detail')"><div class="lc-title">散伙饭套餐</div><div class="lc-meta">海滨餐厅 · 海景包厢 · 4-8 人</div></div>
+      <div class="list-card"><div class="lc-title">嘉庚纪念月饼</div><div class="lc-meta">中秋 × 毕业双节限定</div></div>
+
+      <div class="booking-box">
+        <h3>🌊 海滨餐厅 · 上弦场海景位预约</h3>
+        <p style="font-size:13px;color:var(--subtext);margin-bottom:12px;">边吃饭边看上弦场与海，毕业季最抢手的位置。</p>
+        <div class="seg"><div class="seg-item active">午市 11:00</div><div class="seg-item">晚市 17:30</div><div class="seg-item">夜宵 20:00</div></div>
+        <button class="full-btn" onclick="alert('已提交海景位预约（原型演示）')">预约海景位</button>
+      </div>
+
+      <div class="booking-box">
+        <h3>🏖️ 白城沙滩野餐套餐</h3>
+        <p style="font-size:13px;color:var(--subtext);margin-bottom:12px;">白城沙滩限定野餐篮预订，含餐垫与拍立得，毕业季最出片。</p>
+        <div class="seg"><div class="seg-item active">双人篮 ¥68</div><div class="seg-item">四人篮 ¥128</div></div>
+        <button class="full-btn" onclick="alert('已提交野餐套餐预订（原型演示）')">预订野餐篮</button>
+      </div>
+      <div style="height:20px;"></div>
+    </div>
+
+    <!-- ===== 厦大记忆·校门觅食 ===== -->
+    <div class="screen" id="screen-gate">
+      <div class="nav-header"><div class="back" onclick="goBack()">‹</div>校门觅食</div>
+      <div class="intro-banner gate-intro" style="background:linear-gradient(90deg,#EDE6FB,#D9C9F0);padding:0;overflow:hidden;"><div style="padding:18px 20px;flex:1;display:flex;flex-direction:column;justify-content:center;"><h2>🎨 厦大记忆 · 校门觅食</h2><p>走出校门，芙蓉隧道、沙坡尾与曾厝垵</p></div><img src="images/gate_hero.jpg" class="gate-hero-img" alt="芙蓉隧道涂鸦"></div>
+
+      <div class="section-title"><span>校友记忆中的味道</span></div>
+      <div class="note-card" onclick="goScreen('screen-note-detail')"><div class="img-wrap"><img src="images/bun.jpg" alt="勤业大馒头，四年没腻"></div><div class="info"><h4>勤业大馒头，四年没腻</h4><div class="footer"><div class="author"><div class="avatar">校友</div><span>2018 级 陈学长</span></div><span>♥ 203</span></div></div></div>
+      <div class="note-card" onclick="goScreen('screen-note-detail')"><div class="img-wrap"><img src="images/shrimpnoodle.jpg" alt="南光虾面，毕业那年才敢加满料"></div><div class="info"><h4>南光虾面，毕业那年才敢加满料</h4><div class="footer"><div class="author"><div class="avatar" style="background:var(--xmu-red)">林</div><span>2020 级 林学姐</span></div><span>♥ 156</span></div></div></div>
+
+      <div class="section-title"><span>🖌️ 芙蓉隧道美食涂鸦打卡</span></div>
+      <div class="list-card" onclick="goScreen('screen-note-detail')"><div class="lc-title">「却上心头」涂鸦墙</div><div class="lc-meta">隧道入口 · 配勤业馒头最佳</div></div>
+      <div class="list-card" onclick="goScreen('screen-note-detail')"><div class="lc-title">「我爱你，再见」黑板墙</div><div class="lc-meta">隧道中段 · 毕业照圣地</div></div>
+
+      <div class="section-title"><span>🗺️ 校门外觅食地图</span></div>
+      <div class="canteen-card" onclick="goScreen('screen-detail')"><img src="images/shapowei.jpg"><div class="canteen-info"><div class="canteen-name">沙坡尾艺术西区</div><div class="canteen-meta"><span class="rating">★ 学生据点</span><span class="hours">小吃 / 咖啡</span></div><div class="canteen-tags"><span class="tag-pill">白城左转</span></div></div></div>
+      <div class="canteen-card" onclick="goScreen('screen-detail')"><img src="images/zengcuoan.jpg"><div class="canteen-info"><div class="canteen-name">曾厝垵文创村</div><div class="canteen-meta"><span class="rating">★ 闽南小吃</span><span class="hours">海蛎煎 / 花生汤</span></div><div class="canteen-tags"><span class="tag-pill">公交 2 站</span></div></div></div>
+      <div class="list-card" onclick="goScreen('screen-detail')"><div class="lc-title">南普陀素饼（校门对面）</div><div class="lc-meta">经典伴手礼 · 可拼团代购</div></div>
+      <div style="height:20px;"></div>
+    </div>
+
+    <!-- ===== 我的各子页（通用） ===== -->
+    <div class="screen" id="screen-generic">
+      <div class="nav-header"><div class="back" onclick="goBack()">‹</div><span id="generic-title">我的</span></div>
+      <div class="list-card" onclick="goScreen('screen-note-detail')"><div class="lc-title">勤业沙茶面测评</div><div class="lc-meta">2026-07-18 · 获赞 12</div></div>
+      <div class="list-card"><div class="lc-title">闽南古早味月</div><div class="lc-meta">已参与 · 待开始</div></div>
+      <div class="list-card"><div class="lc-title">南光虾面评价</div><div class="lc-meta">已提交 · 审核中</div></div>
+      <div class="list-card"><div class="lc-title">建议：增加夜宵窗口</div><div class="lc-meta">已回复 · 2026-07-10</div></div>
+      <div class="list-card"><div class="lc-title">浏览过：海滨餐厅</div><div class="lc-meta">2026-07-19</div></div>
+    </div>
+
+    <!-- 底部 Tab -->
+    <div class="tab-bar" id="tab-bar">
+      <div class="tab-item active" data-screen="screen-home"><div class="tab-icon">🏠</div><span>首页</span></div>
+      <div class="tab-item" data-screen="screen-map"><div class="tab-icon">📍</div><span>美食地图</span></div>
+      <div class="tab-item" data-screen="screen-notes"><div class="tab-icon">📒</div><span>美食笔记</span></div>
+      <div class="tab-item" data-screen="screen-profile"><div class="tab-icon">👤</div><span>我的</span></div>
+    </div>
+  </div>
+
+  <script>
+    const tabs = document.querySelectorAll('.tab-item');
+    const screens = document.querySelectorAll('.screen');
+    const TAB_PAGES = ['screen-home','screen-map','screen-notes','screen-profile'];
+    let historyStack = ['screen-home'];
+
+    function showScreen(id) {
+      screens.forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      const tabBar = document.getElementById('tab-bar');
+      if (TAB_PAGES.includes(id)) {
+        tabBar.style.display = 'flex';
+        tabs.forEach(t => t.classList.toggle('active', t.dataset.screen === id));
+      } else {
+        tabBar.style.display = 'none';
+      }
+      // 跳转到新页面时滚动回顶部
+      const sc = document.getElementById(id);
+      if (sc) sc.scrollTop = 0;
+    }
+
+    function goScreen(id) {
+      const cur = document.querySelector('.screen.active');
+      if (!cur || cur.id === id) return; // 防止跳到当前页自身，避免污染返回栈
+      historyStack.push(id);
+      showScreen(id);
+    }
+
+    function goBack() {
+      if (historyStack.length > 1) {
+        historyStack.pop(); // 移除当前页
+        showScreen(historyStack[historyStack.length - 1]); // 回到上一页
+      } else {
+        showScreen('screen-home');
+      }
+    }
+
+    function goGeneric(title) {
+      document.getElementById('generic-title').textContent = title;
+      goScreen('screen-generic');
+    }
+
+    // 食堂详情页 Tab 切换（菜品 / 评价 / 活动 / 笔记 / 档口）
+    function switchDetailTab(tab) {
+      const detail = document.getElementById('screen-detail');
+      detail.querySelectorAll('.detail-tabs span').forEach(el => el.classList.remove('active'));
+      const targetTab = detail.querySelector('.detail-tabs span[data-tab="' + tab + '"]');
+      if (targetTab) targetTab.classList.add('active');
+      detail.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      const panel = detail.querySelector('.tab-panel[data-tab="' + tab + '"]');
+      if (panel) panel.classList.add('active');
+      // 切到菜品时重置为「全部」
+      if (tab === 'dishes') filterDishes('all');
+    }
+
+    // 菜品二级标签筛选（全部 / 一堂一品 / 闽南风味 / 新品 / 素食）
+    function filterDishes(filter) {
+      const detail = document.getElementById('screen-detail');
+      detail.querySelectorAll('.dish-filter span').forEach(el => el.classList.remove('active'));
+      const target = detail.querySelector('.dish-filter span[data-filter="' + filter + '"]');
+      if (target) target.classList.add('active');
+      let visible = 0;
+      detail.querySelectorAll('.dish-list .dish-item').forEach(item => {
+        const filters = (item.dataset.filter || '').split(' ');
+        if (filter === 'all' || filters.includes(filter)) {
+          item.classList.remove('hidden');
+          visible++;
+        } else {
+          item.classList.add('hidden');
+        }
+      });
+      const empty = document.getElementById('dish-empty');
+      if (empty) empty.style.display = visible === 0 ? 'block' : 'none';
+    }
+
+    // 活动详情页 Tab 切换（活动详情 / 报名名单）
+    function switchActivityTab(tab) {
+      const scr = document.getElementById('screen-activity');
+      scr.querySelectorAll('.sub-tabs span').forEach(el => el.classList.remove('active'));
+      const t = scr.querySelector('.sub-tabs span[data-tab="' + tab + '"]');
+      if (t) t.classList.add('active');
+      const info = scr.querySelector('.detail-body');
+      const panel = scr.querySelector('.sub-panel[data-tab="signup"]');
+      if (tab === 'signup') {
+        if (info) info.style.display = 'none';
+        if (panel) panel.style.display = 'block';
+      } else {
+        if (info) info.style.display = '';
+        if (panel) panel.style.display = 'none';
+      }
+    }
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        historyStack = [tab.dataset.screen]; // 切换底部 Tab 时重置返回栈
+        showScreen(tab.dataset.screen);
+      });
+    });
+
+    // 分段控件选中切换（通用）
+    document.querySelectorAll('.seg').forEach(seg => {
+      seg.addEventListener('click', e => {
+        if (e.target.classList.contains('seg-item')) {
+          seg.querySelectorAll('.seg-item').forEach(i => i.classList.remove('active'));
+          e.target.classList.add('active');
+        }
+      });
+    });
+    // 菜品筛选切换
+    document.querySelectorAll('.dish-filter').forEach(seg => {
+      seg.addEventListener('click', e => {
+        if (e.target.tagName === 'SPAN' && e.target.dataset.filter) {
+          filterDishes(e.target.dataset.filter);
+        }
+      });
+    });
+    // 子页 tab 切换
+    document.querySelectorAll('.sub-tabs').forEach(tab => {
+      tab.addEventListener('click', e => {
+        if (e.target.tagName === 'SPAN' && e.target.dataset.noToggle === undefined) {
+          tab.querySelectorAll('span').forEach(i => i.classList.remove('active'));
+          e.target.classList.add('active');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
